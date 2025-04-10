@@ -1,18 +1,33 @@
-import { View, Text } from 'react-native'
-import React, { useEffect } from 'react'
+import { View, Text, ActivityIndicator } from 'react-native'
+import React, { useEffect, useState } from 'react'
 import { router, Stack } from 'expo-router'
 import { UserAuth } from '../_layout'
 import { useContext } from 'react'
 
 
+
 const _layout = () => {
     const {user, setUser} = useContext(UserAuth)
 
-  useEffect(() =>{
-    if(user !== null){
-      router.replace('/(app)')
+    const [hasMounted, setHasMounted] = useState(false)
+
+    useEffect(() => {
+      setHasMounted(true)
+    }, [])
+  
+    useEffect(() => {
+      if (hasMounted && user !== null) {
+        router.replace('/(app)/(drawer)/Home/Index')
+      }
+    }, [user, hasMounted])
+
+    if (!hasMounted) {
+      return (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" />
+        </View>
+      )
     }
-  },[user])
 
   return (
     <>
@@ -22,3 +37,4 @@ const _layout = () => {
 }
 
 export default _layout
+

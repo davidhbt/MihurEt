@@ -9,6 +9,7 @@ const _layout = () => {
   return (
     <GestureHandlerRootView style={{flex: 1}}>
       <Drawer
+      initialRouteName='Home/Index'
         screenOptions={{
           headerTitleAlign: 'center',
           headerShadowVisible: false,
@@ -25,7 +26,7 @@ const _layout = () => {
 
         }}>
         <Drawer.Screen 
-          name='index' 
+          name='Home/Index' 
           options={{
             title: 'Home'
           }}

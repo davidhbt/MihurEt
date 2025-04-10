@@ -42,7 +42,7 @@ function Index() {
     try{
       await signInWithEmailAndPassword(auth, email, Passwrd)
       console.log('logged in')
-      router.replace("/(app)")
+      router.replace("/(app)/(drawer)/Home/Index")
     }catch(err){
       console.log(err)
       ToastAndroid.show(("Invalid Email or Password"), ToastAndroid.SHORT)
@@ -164,7 +164,6 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
   },
   header: {
-    marginBottom: 24,
   },
   headerText: {
     fontSize: 42,
@@ -231,3 +230,4 @@ const styles = StyleSheet.create({
 });
 
 export default Index;
+

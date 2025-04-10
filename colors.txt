@@ -2,3 +2,7 @@ main : #F39C12
 secondary: #2C3E50
 
 main light: #FFBE57
+
+#ececec
+
+#ff9e02
