@@ -1,7 +1,11 @@
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import React from 'react';
+import { router } from 'expo-router';
 
-const MoreBooks = () => {
+const MoreBooks = ({route}) => {
+  const {books} = router.params;
+  console.log(books)
+ 
   return (
     <ScrollView style={{padding: 15}}>
           <Text style={styles.eventsTitle}>Books</Text>

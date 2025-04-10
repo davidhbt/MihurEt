@@ -1,90 +1,129 @@
-import React, { useState } from 'react';
-import {
-  ScrollView,
-  View,
-  Text,
-  FlatList,
-  RefreshControl,
-  StyleSheet,
-} from 'react-native';
+import React, { useEffect, useState } from "react";
+import { View, Text, StyleSheet, TouchableOpacity, Image, FlatList, RefreshControl } from "react-native";
+import { Ionicons } from '@expo/vector-icons';
+import { collection, getDocs } from 'firebase/firestore';
+import { auth, db } from "../../firebase";
 
-const HomeScreen = () => {
+const Events = () => {
+  const EventsRef = collection(db, "Schools", "Mission", "Events");
+  const [events, setEvents] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
+
+  const loadData = async () => {
+    try {
+      const eventsSnapshot = await getDocs(EventsRef);
+      setEvents(eventsSnapshot.docs.map(doc => doc.data()));
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+  }, []);
 
   const onRefresh = () => {
     setRefreshing(true);
-    // Simulate reloading data
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 1500);
+    loadData().finally(() => setRefreshing(false));
   };
 
+  const renderEvent = ({ item }) => (
+    <View style={styles.Event}>
+      <View style={styles.EventImage}>
+        <Image
+          style={{ width: '100%', height: "100%" }}
+          source={{ uri: item.Banner_URL }}
+        />
+      </View>
+      <View style={styles.eventContent}>
+        <Text style={styles.EventTitle}>{item.Title}</Text>
+        <Text style={styles.EventPrice}>{item.is_paid ? 'Paid' : 'Free'}</Text>
+        <Text style={styles.EventDescription}>{item.Description}</Text>
+      </View>
+    </View>
+  );
+
   return (
-    <ScrollView
-      style={styles.container}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-    >
-      {/* Horizontal List 1 */}
-      <Text style={styles.title}>Horizontal Section 1</Text>
-      <FlatList
-        data={[1, 2, 3, 4, 5]}
-        horizontal
-        keyExtractor={(item) => item.toString()}
-        renderItem={({ item }) => <View style={styles.horizontalItem}><Text>{item}</Text></View>}
-        showsHorizontalScrollIndicator={false}
-      />
+    <View style={styles.eventContainer}>
+      <View style={styles.TopTexts}>
+        <Text style={styles.eventsTitle}>Upcoming Events</Text>
+      </View>
 
-      {/* Horizontal List 2 */}
-      <Text style={styles.title}>Horizontal Section 2</Text>
       <FlatList
-        data={[6, 7, 8, 9, 10]}
-        horizontal
-        keyExtractor={(item) => item.toString()}
-        renderItem={({ item }) => <View style={styles.horizontalItem}><Text>{item}</Text></View>}
-        showsHorizontalScrollIndicator={false}
+        data={events}
+        renderItem={renderEvent}
+        keyExtractor={(item, index) => index.toString()}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
       />
-
-      {/* Vertical List */}
-      <Text style={styles.title}>Vertical Section</Text>
-      <FlatList
-        data={[11, 12, 13, 14, 15]}
-        keyExtractor={(item) => item.toString()}
-        renderItem={({ item }) => <View style={styles.verticalItem}><Text>{item}</Text></View>}
-        scrollEnabled={false} // disable internal scroll so parent ScrollView handles it
-      />
-    </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  eventContainer: {
     flex: 1,
-    paddingTop: 50,
+    backgroundColor: "#F7F8FC",
+    paddingTop: 15,
+    paddingHorizontal: 20,
   },
-  title: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginHorizontal: 16,
-    marginTop: 20,
-  },
-  horizontalItem: {
-    width: 120,
-    height: 100,
-    backgroundColor: '#ddd',
-    margin: 8,
-    justifyContent: 'center',
+  TopTexts: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: 15,
+  },
+  eventsTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#333',
+  },
+  eventMore: {
+    color: '#FF9E02',
+    fontSize: 14,
+    fontWeight: '600',
+    letterSpacing: 0.5,
+  },
+  Event: {
+    backgroundColor: 'white',
+    borderRadius: 15,
+    marginBottom: 20,
+    padding: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  EventImage: {
+    width: '100%',
+    height: 200,
     borderRadius: 10,
+    marginBottom: 12,
+    overflow: 'hidden',
   },
-  verticalItem: {
-    height: 80,
-    backgroundColor: '#eee',
-    marginHorizontal: 16,
-    marginVertical: 6,
+  eventContent: {
     justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 8,
+    flex: 1,
+  },
+  EventTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 5,
+  },
+  EventPrice: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#28a745',
+    marginBottom: 10,
+  },
+  EventDescription: {
+    fontSize: 14,
+    color: '#6A6A6A',
+    lineHeight: 20,
   },
 });
 
-export default HomeScreen;
+export default Events;

@@ -18,57 +18,128 @@ import { useState } from "react";
 
 import { Dropdown } from "react-native-element-dropdown";
 const { width, height } = Dimensions.get("window");
-import AntDesign from '@expo/vector-icons/AntDesign';
+import AntDesign from "@expo/vector-icons/AntDesign";
 import { Ionicons } from "@expo/vector-icons";
 import { Link } from "expo-router";
+// import { auth, db } from "../../Config/FireBase";
+import { collection, setDoc, doc } from "firebase/firestore";
+import {
+  updateProfile,
+  createUserWithEmailAndPassword,
+  onAuthStateChanged,
+  signOut,
+} from "firebase/auth";
+import { auth, db } from "../../firebase";
+import { useContext } from "react";
+import { UserAuth } from "../_layout";
 
 function Signup() {
-  const [email, setEmail] = useState();
+  const { user, setUser } = useContext(UserAuth);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState('');
   const [Passwrd, setPassword] = useState();
-  const [schools, setSchools] = useState([{ label: "Mission", value: 1 }])
+  const [loading, setLoading] = useState(false);
+  const [schools, setSchools] = useState([{ label: "Mission", value: 1 }]);
   const [Schoolvalue, setSchoolValue] = useState(null);
-  const [accountType, setaccountType] = useState([{label: "Student", value: 1}, {label: "Instructor", value: 2}, {label: "Admin", value: 3}])
+  const [accountType, setaccountType] = useState([
+    { label: "Student", value: 1 },
+    { label: "Instructor", value: 2 },
+    { label: "Admin", value: 3 },
+  ]);
   const [accountTypeValue, setaccountTypeValue] = useState(null);
+  const usersRef = collection(db, "Schools", "Mission", "Users");
 
-  const [classes, setClasses] = useState([{
-    label: "Grade 1", value: 1
-  },
-  {
-    label: "Grade 2", value: 2
-  },
-  {
-    label: "Grade 3", value: 3
-  },
-  {
-    label: "Grade 4", value: 4
-  },
-  {
-    label: "Grade 5", value: 5
-  },
-  {
-    label: "Grade 6", value: 6
-  },
-  {
-    label: "Grade 7", value: 7
-  },
-  {
-    label: "Grade 8", value: 8
-  },
-  {
-    label: "Grade 9", value: 9
-  },
-  {
-    label: "Grade 10", value: 10
-  },
-  {
-    label: "Grade 11", value: 11
-  },
-  {
-    label: "Grade 12", value: 12
-  },
-])
-const [classesValue, setClassesValue] = useState(null)
-console.log(accountTypeValue, 'hh')
+  const [classes, setClasses] = useState([
+    {
+      label: "Grade 1",
+      value: 1,
+    },
+    {
+      label: "Grade 2",
+      value: 2,
+    },
+    {
+      label: "Grade 3",
+      value: 3,
+    },
+    {
+      label: "Grade 4",
+      value: 4,
+    },
+    {
+      label: "Grade 5",
+      value: 5,
+    },
+    {
+      label: "Grade 6",
+      value: 6,
+    },
+    {
+      label: "Grade 7",
+      value: 7,
+    },
+    {
+      label: "Grade 8",
+      value: 8,
+    },
+    {
+      label: "Grade 9",
+      value: 9,
+    },
+    {
+      label: "Grade 10",
+      value: 10,
+    },
+    {
+      label: "Grade 11",
+      value: 11,
+    },
+    {
+      label: "Grade 12",
+      value: 12,
+    },
+  ]);
+  const [classesValue, setClassesValue] = useState(null);
+  // console.log(accountTypeValue, "hh");
+
+  const handleLogin = async () => {
+    // console.log('clickedd')
+    // setError(""); // Reset error message
+    // setLoading(true);
+    try {
+      await createUserWithEmailAndPassword(auth, email, Passwrd);
+      console.log('step 1')
+
+      // Update user profile with their display name (using their entered name)
+      await updateProfile(auth.currentUser, {
+        displayName: "Mission", // Use the name entered by the user
+      });
+
+      // Add user data to Firestore using the user's UID as document ID
+      await setDoc(doc(usersRef, auth.currentUser.uid), { 
+        Name: name,
+        Email: email,
+        ...(accountTypeValue === 1 && {
+          Class: classesValue,
+          Account_Level: 1,
+        }),
+        ...(accountTypeValue === 2 && { Account_Level: 2 }),
+        ...(accountTypeValue === 3 && { Account_Level: 3 }),
+      });
+
+      console.log("User created successfully");
+      // Uncomment to redirect to another page after login (if necessary)
+      router.replace("/");
+      router.replace("/(app)/(drawer)/Home/Index");
+    } catch (err) {
+      console.log('Failed')
+      setError(err.message);
+      console.log(err.message);
+    } finally {
+      setLoading(false);
+      console.log('wsg')
+    }
+  };
 
   return (
     <ImageBackground source={bk} style={styles.container} resizeMode="cover">
@@ -92,7 +163,7 @@ console.log(accountTypeValue, 'hh')
                 <View style={styles.inputContainer}>
                   <Text style={styles.label}>Full Name</Text>
                   <TextInput
-                    onChangeText={setEmail}
+                    onChangeText={setName}
                     style={styles.input}
                     placeholder="Full name"
                     placeholderTextColor="#999"
@@ -136,7 +207,7 @@ console.log(accountTypeValue, 'hh')
                     }}
                     renderLeftIcon={() => (
                       <Ionicons
-                        style={{marginInline: 5}}
+                        style={{ marginInline: 5 }}
                         color="black"
                         name="person"
                         size={20}
@@ -144,37 +215,38 @@ console.log(accountTypeValue, 'hh')
                     )}
                   />
                 </View>
-                {accountTypeValue === 1 ?
-                <View style={styles.inputContainer}>
-                  <Text style={styles.label}>Grade</Text>
-                  <Dropdown
-                    style={styles.dropdown}
-                    placeholderStyle={styles.placeholderStyle}
-                    selectedTextStyle={styles.selectedTextStyle}
-                    inputSearchStyle={styles.inputSearchStyle}
-                    iconStyle={styles.iconStyle}
-                    data={classes}
-                    maxHeight={300}
-                    labelField="label"
-                    valueField="value"
-                    placeholder="Book For Grade?"
-                    value={classesValue}
-                    onChange={(item) => {
-                      setClassesValue(item.value);
-                    //   console.log(item.value)
-                    }}
-                    renderLeftIcon={() => (
-                      <Ionicons
-                        style={{marginInline: 5}}
-                        color="black"
-                        name="star"
-                        size={20}
-                      />
-                    )}
-                  />
-                </View>
-                : <></>
-}
+                {accountTypeValue === 1 ? (
+                  <View style={styles.inputContainer}>
+                    <Text style={styles.label}>Grade</Text>
+                    <Dropdown
+                      style={styles.dropdown}
+                      placeholderStyle={styles.placeholderStyle}
+                      selectedTextStyle={styles.selectedTextStyle}
+                      inputSearchStyle={styles.inputSearchStyle}
+                      iconStyle={styles.iconStyle}
+                      data={classes}
+                      maxHeight={300}
+                      labelField="label"
+                      valueField="value"
+                      placeholder="Book For Grade?"
+                      value={classesValue}
+                      onChange={(item) => {
+                        setClassesValue(item.value);
+                        //   console.log(item.value)
+                      }}
+                      renderLeftIcon={() => (
+                        <Ionicons
+                          style={{ marginInline: 5 }}
+                          color="black"
+                          name="star"
+                          size={20}
+                        />
+                      )}
+                    />
+                  </View>
+                ) : (
+                  <></>
+                )}
                 <View style={styles.inputContainer}>
                   <Text style={styles.label}>School</Text>
                   <Dropdown
@@ -189,7 +261,7 @@ console.log(accountTypeValue, 'hh')
                     }}
                     renderLeftIcon={() => (
                       <Ionicons
-                        style={{marginInline: 5}}
+                        style={{ marginInline: 5 }}
                         color="black"
                         name="library"
                         size={20}
@@ -199,12 +271,12 @@ console.log(accountTypeValue, 'hh')
                 </View>
 
                 <TouchableOpacity style={styles.createAccount}>
-                  <Link href={'/'} style={styles.createAccountText}>
+                  <Link href={"/"} style={styles.createAccountText}>
                     Already Have An Account?
                   </Link>
                 </TouchableOpacity>
 
-                <TouchableOpacity activeOpacity={0.8} style={styles.button}>
+                <TouchableOpacity onPress={handleLogin} activeOpacity={0.8} style={styles.button}>
                   <Text style={styles.buttonText}>Create Account</Text>
                 </TouchableOpacity>
 
