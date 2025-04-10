@@ -35,7 +35,7 @@ const _layout = () => {
               )}}>
       <Tabs.Screen name='(drawer)' options={{headerShown: false, title: 'Home', tabBarIcon: ({color}) => <Ionicons name='home' color={color} size={15}/>}}/>
       <Tabs.Screen name='Events' options={{tabBarIcon: ({color}) => <Ionicons name='today' color={color} size={15}/>}} />
-      <Tabs.Screen name='Announcments' options={{tabBarIcon: ({color}) => <Ionicons name='megaphone' color={color} size={15}/>}} />
+      <Tabs.Screen name='Announcments/Index' options={{title:"Announcments",tabBarIcon: ({color}) => <Ionicons name='megaphone' color={color} size={15}/>}} />
     </Tabs>
     }
   </>

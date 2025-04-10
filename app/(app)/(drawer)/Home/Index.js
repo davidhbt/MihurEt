@@ -1,11 +1,21 @@
-import { View, Text, StatusBar, Button, SafeAreaView, StyleSheet, Image, ScrollView, TouchableOpacity, TextInput } from 'react-native';
+import { View, Text, StatusBar, Button, SafeAreaView, StyleSheet, Image, ScrollView, TouchableOpacity, TextInput, RefreshControl } from 'react-native';
 import React, { useState } from 'react';
 import { signOut } from 'firebase/auth';
 import { auth } from '../../../../firebase';
 import { Ionicons } from '@expo/vector-icons';
 
+
 const Index = () => {
   const [searchInput, setSearchInput] = useState("")
+    const [refreshing, setRefreshing] = useState(false);
+  
+    const onRefresh = () => {
+      setRefreshing(true);
+      // Simulate reloading data
+      setTimeout(() => {
+        setRefreshing(false);
+      }, 1500);
+    };
 
   const handleSignout = async () => {
     try {
@@ -17,9 +27,10 @@ const Index = () => {
   };
 
   return (
-    <SafeAreaView style={styles.Container}>
+    <SafeAreaView style={styles.Container}  >
       <StatusBar backgroundColor={'#F39C12'} />
-      <ScrollView style={styles.homeContent}>
+      <ScrollView  refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} 
+            />}  style={styles.homeContent}>
         <View style={styles.search} >
           <TextInput onChangeText={setSearchInput} style={styles.searchInput} placeholder='Search Posts' />
           <Ionicons style={styles.searchIcon} name='search' onPress={handleSignout}/>
@@ -72,7 +83,20 @@ const Index = () => {
           </View>
           <View style={styles.posts}>
             <View style={styles.post}>
-              
+              <View style={styles.topContent}>
+                <Text style={styles.authurname}>David Habte</Text>
+                <Text style={styles.postDate}> Date: 2025/2/34</Text>
+              </View>
+              <View style={styles.content}>
+                <View style={styles.writing}>
+                  <Text style={styles.WritingTitle}>Computer Networking</Text>
+                  <Text style={styles.WritingDescription}>Computer Networking Fundmentals by Gemechu aschalew</Text>
+                </View>
+                <View style={styles.posticoncontainer}>
+
+                <Ionicons style={styles.postIcon} size={30} name='attach-outline'/>
+                </View>
+              </View>
             </View>
           </View>
         </View>
@@ -89,6 +113,7 @@ const styles = StyleSheet.create({
   },
   homeContent: {
     flex: 1,
+    // paddingTop: 
   },
   eventContainer: {
     paddingTop: 15,
@@ -212,6 +237,63 @@ const styles = StyleSheet.create({
   },
   searchInput:{
     flex: 1
+  },
+  PostsContainer: {
+    width: "100%",
+    paddingHorizontal: 15,
+    marginBottom: 30
+  },
+  post:{
+    backgroundColor: 'white',
+    padding: 20,
+    gap: 10,
+    borderRadius: 10,
+  }
+  ,
+  topContent:{
+    flexDirection: 'row',
+    width: '100%',
+    justifyContent: 'space-between'
+  }
+  ,
+  authurname:{
+    fontWeight: 'bold'
+  }
+  ,
+  postDate:{
+    fontWeight: '500',
+    opacity: 0.6,
+    fontSize: 13
+  }
+  ,
+  content:{
+    width: '100%',
+    // backgroundColor: 'red',
+    flexDirection: 'row'
+  }
+  ,
+  writing:{
+    // backgroundColor: 'green',
+    width: '80%'
+  }
+  ,
+  WritingTitle:{
+fontSize: 18,
+fontWeight: 'bold'
+  }
+  ,
+  WritingDescription:{
+    opacity: 0.5
+  }
+  ,
+  posticoncontainer:{
+    // backgroundColor: 'red',
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  postIcon:{
+    transform: "rotate(30deg)"
   }
 
 
