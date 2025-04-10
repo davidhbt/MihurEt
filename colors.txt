@@ -1,0 +1,4 @@
+main : #F39C12
+secondary: #2C3E50
+
+main light: #FFBE57
