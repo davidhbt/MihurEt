@@ -17,7 +17,7 @@ const _layout = () => {
   
     useEffect(() => {
       if (hasMounted && user !== null) {
-        router.replace('/(app)/(drawer)/Home/Index')
+        router.replace('/(app)/(drawer)/Home')
       }
     }, [user, hasMounted])
 

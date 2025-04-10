@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { signOut } from 'firebase/auth';
 import { auth } from '../../../../firebase';
 import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 
 
 const Index = () => {
@@ -58,10 +59,10 @@ const Index = () => {
             </View>
           </View>
         </View>
-        <View style={styles.bookContainer}>
+        <View  style={styles.bookContainer}>
           <View style={styles.TopTexts}>
             <Text style={styles.eventsTitle}>Books</Text>
-            <Text style={styles.eventMore}>See All &gt;</Text>
+            <Text  onPress={() => router.push("(app)/(drawer)/Home/MoreBooks")} style={styles.eventMore}>See All &gt;</Text>
           </View>
           <View style={styles.Books}>
             <View style={styles.book}>
@@ -192,7 +193,7 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
-    elevation: 5,
+    elevation:3,
     padding: 15,
     gap: 10,
   },
@@ -248,6 +249,14 @@ const styles = StyleSheet.create({
     padding: 20,
     gap: 10,
     borderRadius: 10,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 50,
+      height: 50,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation:3,
   }
   ,
   topContent:{

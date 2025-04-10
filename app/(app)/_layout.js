@@ -29,13 +29,13 @@ const _layout = () => {
     {user &&
     <Tabs screenOptions={{ headerTitleAlign: 'center' , headerShadowVisible: false, tabBarActiveTintColor: "#FFBE57", headerTintColor: "#2C3E50", headerRight: () => (
                 <View style={{ marginRight: 10 }}>
-                  <Ionicons name='person-circle-outline' color={'#F39C12'} size={28}/>
+                  <Ionicons  onPress={() => router.push("Profile")}  name='person-circle-outline' color={'#F39C12'} size={28}/>
                   {/* Add your custom component or button here */}
                 </View>
               )}}>
       <Tabs.Screen name='(drawer)' options={{headerShown: false, title: 'Home', tabBarIcon: ({color}) => <Ionicons name='home' color={color} size={15}/>}}/>
       <Tabs.Screen name='Events' options={{tabBarIcon: ({color}) => <Ionicons name='today' color={color} size={15}/>}} />
-      <Tabs.Screen name='Announcments/Index' options={{title:"Announcments",tabBarIcon: ({color}) => <Ionicons name='megaphone' color={color} size={15}/>}} />
+      <Tabs.Screen name='Announcments' options={{title:"Announcments",tabBarIcon: ({color}) => <Ionicons name='megaphone' color={color} size={15}/>}} />
     </Tabs>
     }
   </>
