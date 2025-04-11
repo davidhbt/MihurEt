@@ -4,9 +4,12 @@ import { Drawer } from 'expo-router/drawer';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { UserAuth } from '../../_layout';
+import { useContext } from 'react';
 
 
 const _layout = () => {
+  const {userStat} = useContext(UserAuth)
   return (
     <GestureHandlerRootView style={styles.container}>
       <Drawer
@@ -59,8 +62,11 @@ const _layout = () => {
         />
 
         <Drawer.Screen 
+        
           name='Create' 
           options={{
+            drawerItemStyle: userStat?.Account_Level === 1? { display: 'none' } : {},
+
             drawerIcon: ({ focused, color, size }) => (
               <Ionicons
                 name={focused ? 'add' : 'add-outline'}
@@ -69,7 +75,7 @@ const _layout = () => {
               />
             )
           }}
-        />
+        /> 
         {/* <Drawer.Screen 
           name='Notfications' 
           options={{

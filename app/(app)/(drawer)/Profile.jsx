@@ -1,7 +1,11 @@
 import { View, Text, Image, StyleSheet } from 'react-native';
 import React from 'react';
+import { UserAuth } from '../../_layout';
+import { useContext } from 'react';
+import { use } from 'react';
 
 const Profile = () => {
+  const {user, userStat} = useContext(UserAuth)
   // Function to generate a random 10-digit number as ID
   const generateRandomID = () => {
     return Math.floor(1000000000 + Math.random() * 9000000000).toString();
@@ -17,17 +21,31 @@ const Profile = () => {
           />
         </View>
         <Text style={styles.name}>DavidHabte</Text>
+          {userStat.Account_Level == 1 &&  
         <View style={styles.infoContainer}>
           <Text style={styles.infoLabel}>Grade:</Text>
           <Text style={styles.info}>9</Text>
         </View>
+}
+{
+  userStat.Account_Level == 2 &&  <View style={styles.infoContainer}>
+  <Text style={styles.infoLabel}>Instructor</Text>
+  {/* <Text style={styles.info}>9</Text> */}
+</View>
+}
+{
+  userStat.Account_Level == 3 &&  <View style={styles.infoContainer}>
+  <Text style={styles.infoLabel}>Admin</Text>
+  {/* <Text style={styles.info}>9</Text> */}
+</View>
+}
         <View style={styles.infoContainer}>
           <Text style={styles.infoLabel}>Joined:</Text>
-          <Text style={styles.info}>March 25, 2022</Text>
+          <Text style={styles.info}>{userStat.Date ? userStat?.Date : 'Null'}</Text>
         </View>
         <View style={styles.infoContainer}>
           <Text style={styles.infoLabel}>ID NO:</Text>
-          <Text style={styles.info}>{generateRandomID()}</Text>
+          <Text style={styles.ID}>{user.uid}</Text>
         </View>
       </View>
     </View>
@@ -83,6 +101,11 @@ const styles = StyleSheet.create({
   infoContainer: {
     flexDirection: 'row',
     marginBottom: 8,
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  ID:{
+    fontSize: 10
   },
   infoLabel: {
     fontSize: 16,

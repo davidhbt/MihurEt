@@ -24,7 +24,12 @@ const Index = () => {
       const eventsSnapshot = await getDocs(EventsRef);
 
       setBooks(booksSnapshot.docs.map(doc => doc.data()));
-      setPosts(postsSnapshot.docs.map(doc => doc.data()));
+      setPosts(
+        postsSnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+        }))
+      );
       setEvents(eventsSnapshot.docs.map(doc => doc.data()));
     } catch (err) {
       console.error(err);
@@ -131,7 +136,7 @@ const Index = () => {
             keyExtractor={(item, index) => index.toString()}
             renderItem={({ item }) => (
               <TouchableOpacity
-                onPress={() => router.push("(app)/(drawer)/Home/Post")}
+                onPress={() => router.push({ pathname: "(app)/(drawer)/Home/[Post]", params: { id: item.id } })}
                 activeOpacity={0.7}
                 style={styles.post}
               >
