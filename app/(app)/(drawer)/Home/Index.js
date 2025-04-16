@@ -1,10 +1,11 @@
-import { View, Text, StatusBar, SafeAreaView, StyleSheet, Image, ScrollView, TouchableOpacity, TextInput, RefreshControl, FlatList } from 'react-native';
+import { View, Text, StatusBar, SafeAreaView, StyleSheet, Image, ScrollView, TouchableOpacity, TextInput, RefreshControl, FlatList, ActivityIndicator } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { signOut } from 'firebase/auth';
 import { auth, db } from '../../../../firebase';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { collection, getDocs } from 'firebase/firestore';
+import { ToastAndroid } from 'react-native';
 
 const Index = () => {
   const [searchInput, setSearchInput] = useState("");
@@ -12,6 +13,7 @@ const Index = () => {
   const [posts, setPosts] = useState([]);
   const [books, setBooks] = useState([]);
   const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true); // Loading state
 
   const BooksRef = collection(db, "Schools", "Mission", "Books");
   const PostsRef = collection(db, "Schools", "Mission", "Posts");
@@ -33,6 +35,8 @@ const Index = () => {
       setEvents(eventsSnapshot.docs.map(doc => doc.data()));
     } catch (err) {
       console.error(err);
+    } finally {
+      setLoading(false); // Set loading to false after data is fetched
     }
   };
 
@@ -54,9 +58,19 @@ const Index = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+      <StatusBar style='light' backgroundColor={'#F39C12'} />
+        <ActivityIndicator size="large" color="#F39C12" />
+        <Text style={styles.loadingText}>Loading...</Text>
+      </View>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.Container}>
-      <StatusBar backgroundColor={'#F39C12'} />
+      <StatusBar style='light' backgroundColor={'#F39C12'} />
       <ScrollView
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
@@ -110,11 +124,12 @@ const Index = () => {
             data={books}
             keyExtractor={(item, index) => index.toString()}
             renderItem={({ item }) => (
-              <View style={styles.book}>
+              <View o style={styles.book}>
                 <Text style={styles.bookTitle}>{item.Title}</Text>
                 <Text style={styles.bookDescription} numberOfLines={2} ellipsizeMode='tail'>{item.Description}</Text>
                 <TouchableOpacity
                   activeOpacity={0.9}
+                  nPress={() => ToastAndroid.show(("Downloading"), ToastAndroid.SHORT)}
                   style={styles.openBookButton}
                 >
                   <Text style={styles.openBookText}>Open Book</Text>
@@ -136,7 +151,7 @@ const Index = () => {
             keyExtractor={(item, index) => index.toString()}
             renderItem={({ item }) => (
               <TouchableOpacity
-                onPress={() => router.push({ pathname: "(app)/(drawer)/Home/[Post]", params: { id: item.id } })}
+                onPress={() => router.push({ pathname: "(app)/(drawer)/Home/[Post]", params: { posts: posts ,id: item.id } })}
                 activeOpacity={0.7}
                 style={styles.post}
               >
@@ -161,8 +176,6 @@ const Index = () => {
     </SafeAreaView>
   );
 };
-
-
 
 const styles = StyleSheet.create({
   Container: {
@@ -329,9 +342,20 @@ const styles = StyleSheet.create({
     fontSize: 22,
     color: '#555',
   },
+
+  // Loading screen styles
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#fff",
+  },
+  loadingText: {
+    fontSize: 18,
+    color: "#333",
+    marginTop: 10,
+  },
 });
 
 
 export default Index;
-
-

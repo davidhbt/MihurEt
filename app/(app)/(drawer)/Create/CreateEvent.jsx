@@ -8,6 +8,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Image,
+  ActivityIndicator,
 } from "react-native";
 import React, { useState, useEffect } from "react";
 import * as DocumentPicker from "expo-document-picker";
@@ -16,6 +17,7 @@ import { Dropdown } from "react-native-element-dropdown";
 import { auth, db } from "../../../../firebase";
 import ImageKit from "imagekit-javascript";
 import { collection, addDoc, Timestamp, Firestore } from "firebase/firestore";
+import { router } from "expo-router";
 
 const CreateEvent = () => {
   const [title, setTitle] = useState("");
@@ -23,6 +25,7 @@ const CreateEvent = () => {
   const [document, setDocument] = useState(null);
   const EventsRef = collection(db, "Schools", "Mission", "Events");
   const [isUploading, setIsUploading] = useState(false);
+  const [loading,setLoading] = useState(false)
 
   const [documentUrl, setDocumentUrl] = useState(null);
 
@@ -89,6 +92,7 @@ const CreateEvent = () => {
 
   const HandlePost = async () => {
     if (!document || isUploading) return;
+    setLoading(true)
     try {
       const currentDate = new Date();
 
@@ -101,8 +105,13 @@ const CreateEvent = () => {
       // console.log(finalTitle)/
       // toast.success("Post Uploaded!");
       console.log("Uploaded");
+      // router.replace("")
+      setLoading(false)
+      router.replace('/(app)/(drawer)/Home')
+      
     } catch (err) {
       // alert("Post error");
+      setLoading(false)
 
       console.log(err);
     }
@@ -194,14 +203,19 @@ const CreateEvent = () => {
         </Pressable>
 
         {/* Post Button */}
+            {isUploading && <View>
+              <Text>Uploading please wait...</Text>
+              <ActivityIndicator/>
+              </View>}
         <Pressable
           style={({ pressed }) => [
             styles.button,
             pressed && styles.buttonPressed,
           ]}
           onPress={HandlePost}
+          disabled={loading || isUploading}
         >
-          <Text style={styles.buttonText}>🚀 Post</Text>
+          <Text style={styles.buttonText}>{loading ? 'Loading...' : '🚀 Post'}</Text>
         </Pressable> 
       </ScrollView>
     </KeyboardAvoidingView>

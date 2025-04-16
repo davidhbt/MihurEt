@@ -7,6 +7,7 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  ActivityIndicator,
 } from "react-native";
 import React, { useState, useEffect } from "react";
 import * as DocumentPicker from "expo-document-picker";
@@ -15,12 +16,14 @@ import { Dropdown } from "react-native-element-dropdown";
 import { auth, db } from "../../../../firebase";
 import ImageKit from "imagekit-javascript";
 import { collection, addDoc, Timestamp, Firestore } from "firebase/firestore";
+import { router } from "expo-router";
 
 const CreateBook = () => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [document, setDocument] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const BooksRef = collection(db, "Schools", "Mission", "Books");
   const [classes] = useState([
@@ -38,35 +41,37 @@ const CreateBook = () => {
     { label: "Grade 12", value: 12 },
   ]);
   const [classesValue, setClassesValue] = useState(null);
-    const [documentUrl, setDocumentUrl] = useState(null)
-  
+  const [documentUrl, setDocumentUrl] = useState(null);
 
   const imagekit = new ImageKit({
     publicKey: "public_gm6QzMSvtXTRUznP5BaUJbnAM6s=", // Your public key
     urlEndpoint: "https://ik.imagekit.io/notefull", // Your URL endpoint
   });
 
-    const HandlePost = async () => {
-        if (!document || isUploading || !classesValue ) return;
-          try {
-            const currentDate = new Date();
-      
-            await addDoc(BooksRef, {
-              Title: title,
-              Attachmet_URL: documentUrl,
-              Timestamp: currentDate,
-              Description: description,
-              Class: classesValue
-            });
-            // console.log(finalTitle)/
-            // toast.success("Post Uploaded!");
-            console.log('Uploaded')
-          } catch (err) {
-            // alert("Post error");
-      
-            console.log(err);
-          }
-        };
+  const HandlePost = async () => {
+    if (!document || isUploading || !classesValue) return;
+    setLoading(true);
+    try {
+      const currentDate = new Date();
+
+      await addDoc(BooksRef, {
+        Title: title,
+        Attachmet_URL: documentUrl,
+        Timestamp: currentDate,
+        Description: description,
+        Class: classesValue,
+      });
+      // console.log(finalTitle)/
+      // toast.success("Post Uploaded!");
+      console.log("Uploaded");
+      setLoading(false);
+      router.replace("/(app)/(drawer)/Home");
+    } catch (err) {
+      // alert("Post error");
+      setLoading('false')
+      console.log(err);
+    }
+  };
 
   const pickDocument = async () => {
     try {
@@ -188,6 +193,11 @@ const CreateBook = () => {
           </View>
         </Pressable>
 
+    {isUploading && <View style={{flexDirection: 'row'}}>
+      <ActivityIndicator/>
+      <Text>Uploading Document...</Text>
+      </View>}
+
         {/* Dropdown */}
         <Text style={styles.label}>Grade</Text>
         <Dropdown
@@ -222,9 +232,11 @@ const CreateBook = () => {
             pressed && styles.buttonPressed,
           ]}
           onPress={HandlePost}
-          disabled={isUploading}
+          disabled={loading || isUploading}
         >
-          <Text style={styles.buttonText}>{ isUploading ? "Uploading..." : " 🚀 Post"}</Text>
+          <Text style={styles.buttonText}>
+            {loading ? "Uploading..." : " 🚀 Post"}
+          </Text>
         </Pressable>
       </ScrollView>
     </KeyboardAvoidingView>

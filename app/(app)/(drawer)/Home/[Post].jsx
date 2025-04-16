@@ -1,53 +1,125 @@
-import { View, Text, StyleSheet, ScrollView, Pressable } from 'react-native'
-import React, { useEffect, useState } from 'react'
-import { Ionicons } from '@expo/vector-icons'
-import { useLocalSearchParams } from 'expo-router'
-import { doc, getDoc } from 'firebase/firestore'
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  Pressable,
+  ActivityIndicator,
+  Alert,
+  ToastAndroid,
 
-import { db } from '../../../../firebase'
+} from "react-native";
+import React, { useEffect, useState } from "react";
+import { Ionicons } from "@expo/vector-icons";
+import { useLocalSearchParams } from "expo-router";
+import { doc, getDoc, getDocs, collection } from "firebase/firestore";
+import * as FileSystem from "expo-file-system";
+import * as Sharing from "expo-sharing";
+
+import { db } from "../../../../firebase";
 
 const Post = () => {
-  const { id } = useLocalSearchParams()
-  const PostsRef = doc(db, "Schools", "Mission", "Posts", id)
-  const [post, setPost] = useState(null)
+  const { id } = useLocalSearchParams();
+  const PostsRef = doc(db, "Schools", "Mission", "Posts", id);
+  const [post, setPost] = useState(null);
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const FetchPosts = async () => {
     try {
-      const snapshot = await getDoc(PostsRef)
+      const snapshot = await getDoc(PostsRef);
       if (snapshot.exists()) {
-        const postData = { id: snapshot.id, ...snapshot.data() }
-        setPost(postData)
-        console.log(postData, 'Fetched Post')
+        const postData = { id: snapshot.id, ...snapshot.data() };
+        setPost(postData);
       }
+
+      const postsSnapshot = await getDocs(
+        collection(db, "Schools", "Mission", "Posts")
+      );
+
+      const allPosts = postsSnapshot.docs
+        .filter((doc) => doc.id !== id)
+        .map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+      setPosts(allPosts);
+      setLoading(false);
     } catch (err) {
-      console.log('Error fetching post:', err)
+      console.log("Error fetching post:", err);
+      setLoading(false);
     }
-  }
+  };
+
+  const handleDownload = async () => {
+    // console.log('downloading')
+    ToastAndroid.show(("Downloading"), ToastAndroid.SHORT)
+
+    try {
+      if (!post?.Attachmet_URL) {
+        Alert.alert("No attachment found.");
+    ToastAndroid.show(("No Attachment Found"), ToastAndroid.SHORT)
+
+        return;
+      }
+
+      const fileUri = FileSystem.documentDirectory + "attachment.pdf"; // Adjust extension if needed
+
+      const downloadResumable = FileSystem.createDownloadResumable(
+        post.Attachmet_URL,
+        fileUri
+      );
+
+      const { uri } = await downloadResumable.downloadAsync();
+      // console.log("Downloaded to:", uri);
+    ToastAndroid.show(("Downloaded to:" ,uri), ToastAndroid.SHORT)
+
+
+
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(uri);
+      } else {
+        Alert.alert("Download complete", "But sharing is not available.");
+      }
+    } catch (error) {
+      console.error("Download error:", error);
+    ToastAndroid.show(("Download Error", error), ToastAndroid.SHORT)
+
+      // Alert.alert("Download Failed", "Unable to download the file.");
+    }
+  };
 
   useEffect(() => {
-    FetchPosts()
-  }, [])
+    FetchPosts();
+  }, []);
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#F39C12" />
+        <Text style={styles.loadingText}>Loading...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
       <View style={styles.postHeader}>
-        <Text style={styles.postTitle}>
-          {post ? post.Title : 'Loading...'}
-        </Text>
+        <Text style={styles.postTitle}>{post ? post.Title : "Loading..."}</Text>
         <Text style={styles.postDate}>
-          {post?.CreatedAt ? new Date(post.CreatedAt.seconds * 1000).toDateString() : ''}
+          {post?.CreatedAt
+            ? new Date(post.CreatedAt.seconds * 1000).toDateString()
+            : ""}
         </Text>
       </View>
 
       <Text style={styles.postDescription}>
-        {post ? post.Description : 'Fetching post description...'}
+        {post ? post.Description : "Fetching post description..."}
       </Text>
 
-      {post?.AttachmentURL && (
-        <Pressable style={styles.downloadAttachment} onPress={() => {
-          // You could implement FileSystem.downloadAsync if needed here
-          console.log('Download URL:', post.AttachmentURL)
-        }}>
+      {post?.Attachmet_URL && (
+        <Pressable style={styles.downloadAttachment} onPress={handleDownload}>
           <Text style={styles.downloadAttachmentText}>Download Attachment</Text>
         </Pressable>
       )}
@@ -56,17 +128,26 @@ const Post = () => {
         <Text style={styles.recommendedPostTabText}>Recommended Posts</Text>
         <ScrollView style={{ flex: 1 }}>
           <View style={styles.PostsContainer}>
-            <View style={styles.posts}>
-              <View style={styles.post}>
+            {posts?.map((item) => (
+              <View style={styles.post} key={item.id}>
                 <View style={styles.topContent}>
-                  <Text style={styles.authurname}>David Habte</Text>
-                  <Text style={styles.postDate}>Date: 2025/2/34</Text>
+                  <Text style={styles.authurname}>
+                    {item.Author || "Unknown Author"}
+                  </Text>
+                  <Text style={styles.postDate}>
+                    Date:{" "}
+                    {item.CreatedAt
+                      ? new Date(
+                          item.CreatedAt.seconds * 1000
+                        ).toLocaleDateString()
+                      : "N/A"}
+                  </Text>
                 </View>
                 <View style={styles.content}>
                   <View style={styles.writing}>
-                    <Text style={styles.WritingTitle}>Computer Networking</Text>
+                    <Text style={styles.WritingTitle}>{item.Title}</Text>
                     <Text style={styles.WritingDescription}>
-                      Computer Networking Fundamentals by Gemechu Aschalew
+                      {item.Description?.slice(0, 80) + "..."}
                     </Text>
                   </View>
                   <View style={styles.posticoncontainer}>
@@ -78,13 +159,13 @@ const Post = () => {
                   </View>
                 </View>
               </View>
-            </View>
+            ))}
           </View>
         </ScrollView>
       </View>
     </View>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -92,42 +173,42 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   postHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginBottom: 10,
   },
   postTitle: {
-    fontWeight: 'bold',
+    fontWeight: "bold",
     fontSize: 23,
   },
   postDate: {
     fontSize: 12,
-    color: '#666',
+    color: "#666",
   },
   postDescription: {
     fontSize: 14,
-    color: '#333',
+    color: "#333",
     marginBottom: 20,
   },
   downloadAttachment: {
     width: 200,
     paddingVertical: 10,
     paddingHorizontal: 15,
-    backgroundColor: '#F39C12',
+    backgroundColor: "#F39C12",
     borderRadius: 8,
-    alignItems: 'center',
-    marginBottom: 20,
+    alignItems: "center",
+    marginBlock: 10,
   },
   downloadAttachmentText: {
-    color: 'white',
-    fontWeight: 'bold',
-    fontSize: 16,
+    color: "white",
+    fontWeight: "bold",
+    fontSize: 13,
   },
   recommendedPostTab: {
     flex: 1,
-    backgroundColor: '#f7f7f7',
+    backgroundColor: "#f7f7f7",
     borderRadius: 10,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   recommendedPostTabText: {
     fontSize: 20,
@@ -180,6 +261,17 @@ const styles = StyleSheet.create({
   postIcon: {
     transform: [{ rotate: "30deg" }],
   },
-})
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#fff",
+  },
+  loadingText: {
+    fontSize: 18,
+    color: "#333",
+    marginTop: 10,
+  },
+});
 
-export default Post
+export default Post;

@@ -21,6 +21,7 @@ const CreatePost = () => {
   const [description, setDescription] = useState("");
   const [document, setDocument] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [loading, setLoading] = useState(false)
   const [documentUrl, setDocumentUrl] = useState(null)
     const PostsRef = collection(db, "Schools", "Mission", "Posts");
   
@@ -33,6 +34,7 @@ const CreatePost = () => {
 
   const HandlePost = async () => {
     if (!document || isUploading) return;
+    setLoading(true)
       try {
         const currentDate = new Date();
   
@@ -45,10 +47,11 @@ const CreatePost = () => {
         });
         // console.log(finalTitle)/
         // toast.success("Post Uploaded!");
+        setLoading(false)
         console.log('Uploaded')
       } catch (err) {
         // alert("Post error");
-  
+        setLoading(false)
         console.log(err);
       }
     };
@@ -199,9 +202,9 @@ const CreatePost = () => {
             pressed && styles.buttonPressed,
           ]}
           onPress={HandlePost}
-          disabled={isUploading}
+          disabled={isUploading || loading}
         >
-          <Text style={styles.buttonText}>🚀 Post</Text>
+          <Text style={styles.buttonText}>{loading ? 'Uploading' : '🚀 Post'}</Text>
         </Pressable>
       </ScrollView>
     </KeyboardAvoidingView>

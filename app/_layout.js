@@ -25,6 +25,7 @@ export default function RootLayout() {
           // console.log(docSnap.data(), "dd");
         } else {
           setUserStat(null);
+          setUser(null)
         }
       } else {
         setUser(null);
@@ -38,7 +39,7 @@ export default function RootLayout() {
   console.log(user);
   return (
     <UserAuth.Provider value={{ user, setUser, userStat, setUserStat }}>
-      {user === null || userStat === undefined ? (
+      {user === undefined ? (
         <View
           style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
         >

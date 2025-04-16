@@ -11,8 +11,11 @@ import {
   Platform,
   Dimensions,
   ScrollView,
+  ToastAndroid,
+
 } from "react-native";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
+
 import bk from "../../assets/test.png";
 import { useState } from "react";
 
@@ -119,22 +122,27 @@ function Signup() {
       await setDoc(doc(usersRef, auth.currentUser.uid), { 
         Name: name,
         Email: email,
-        ...(accountTypeValue === 1 && {
-          Class: classesValue,
-          Account_Level: 1,
-        }),
-        ...(accountTypeValue === 2 && { Account_Level: 2 }),
-        ...(accountTypeValue === 3 && { Account_Level: 3 }),
+        Account_Level: accountTypeValue
+        // ...(accountTypeValue === 1 && {
+        //   Class: classesValue,
+        //   Account_Level: 1,
+        // }),
+        // ...(accountTypeValue === 2 && { Account_Level: 2 }),
+        // ...(accountTypeValue === 3 && { Account_Level: 3 }),
+        
       });
 
       console.log("User created successfully");
+      ToastAndroid.show(("Creating Account"), ToastAndroid.SHORT)
+
       // Uncomment to redirect to another page after login (if necessary)
       router.replace("/");
       router.replace("/(app)/(drawer)/Home/Index");
     } catch (err) {
       console.log('Failed')
-      setError(err.message);
-      console.log(err.message);
+      ToastAndroid.show(("Invalid Form Input"), ToastAndroid.SHORT)
+
+      console.log(err)
     } finally {
       setLoading(false);
       console.log('wsg')

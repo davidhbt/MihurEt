@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Image, FlatList, RefreshControl } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Image, FlatList, RefreshControl, ActivityIndicator } from "react-native";
 import { Ionicons } from '@expo/vector-icons';
 import { collection, getDocs } from 'firebase/firestore';
 import { auth, db } from "../../firebase";
@@ -8,13 +8,17 @@ const Events = () => {
   const EventsRef = collection(db, "Schools", "Mission", "Events");
   const [events, setEvents] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [loading, setLoading] = useState(true); // Loading state to control loading screen
 
   const loadData = async () => {
     try {
+      setLoading(true); // Start loading
       const eventsSnapshot = await getDocs(EventsRef);
       setEvents(eventsSnapshot.docs.map(doc => doc.data()));
     } catch (err) {
       console.error(err);
+    } finally {
+      setLoading(false); // Set loading to false after data is fetched
     }
   };
 
@@ -42,6 +46,16 @@ const Events = () => {
       </View>
     </View>
   );
+
+  // Display loading spinner if loading is true
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#FF9E02" />
+        <Text style={styles.loadingText}>Loading Events...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.eventContainer}>
@@ -78,12 +92,6 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: '700',
     color: '#333',
-  },
-  eventMore: {
-    color: '#FF9E02',
-    fontSize: 14,
-    fontWeight: '600',
-    letterSpacing: 0.5,
   },
   Event: {
     backgroundColor: 'white',
@@ -123,6 +131,17 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#6A6A6A',
     lineHeight: 20,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: "#F7F8FC",
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: '#333',
   },
 });
 

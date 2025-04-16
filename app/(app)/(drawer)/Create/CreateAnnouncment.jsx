@@ -11,30 +11,36 @@ import {
 import React, { useState } from "react";
 import { auth, db } from "../../../../firebase";
 import { addDoc, collection } from "firebase/firestore";
+import { router } from "expo-router";
 
 const CreateAnnouncement = () => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [author, setAuthor] = useState("David Habte");
   const AnnouncmetRef = collection(db, "Schools", "Mission", "Announcments");
+  const [loading, setLoading] = useState(false);
 
-  const handlePost = async() =>{
-    if(!title| !description | !author){
-      return
+  const handlePost = async () => {
+    if (!title | !description | !author) {
+      return;
     }
-    try{
-
-      const currDate = new Date()
+    setLoading(true);
+    try {
+      const currDate = new Date();
       await addDoc(AnnouncmetRef, {
         Title: title,
         Description: description,
-        Posted_By: author
-      })
-      console.log('uploaded')
-    }catch(err){
-      console.log(err)
+        Posted_By: author,
+      });
+      setLoading(false);
+      console.log("uploaded");
+      router.replace("/(app)/(drawer)/Home");
+
+    } catch (err) {
+      console.log(err);
+      setLoading(false)
     }
-  }
+  };
 
   const handlePress = () => {
     console.log("Post Button Pressed");
@@ -87,8 +93,9 @@ const CreateAnnouncement = () => {
             pressed && styles.buttonPressed,
           ]}
           onPress={handlePost}
+          disabled={loading}
         >
-          <Text style={styles.buttonText}>Post</Text>
+          <Text style={styles.buttonText} >{loading ? 'Uploading' : "Post"}</Text>
         </Pressable>
       </ScrollView>
     </KeyboardAvoidingView>

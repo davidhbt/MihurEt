@@ -1,8 +1,35 @@
 import { View, Text, StyleSheet } from 'react-native'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { namedQuery } from 'firebase/firestore'
+import { useLocalSearchParams } from 'expo-router';
+import { doc, getDoc, getDocs, collection } from "firebase/firestore";
+import { db, auth } from '../../../firebase';
 
 const Popout = () => {
+  const { id } = useLocalSearchParams(); 
+    const PostsRef = doc(db, "Schools", "Mission", "Announcments", id);
+    const [announcment, setAnnouncment] = useState(null)
+
+  const FetchPosts = async () => {
+      try {
+        const snapshot = await getDoc(PostsRef);
+        if (snapshot.exists()) {
+          const postData = { id: snapshot.id, ...snapshot.data() };
+          setAnnouncment(postData);
+        }
+  
+        setLoading(false);
+      } catch (err) {
+        console.log("Error fetching post:", err);
+        setLoading(false);
+      }
+    };
+
+    useEffect(() =>{
+      FetchPosts()
+    }, [])
+
+  console.log(announcment)
   return (
     <View style={s.container}>
       <View style={s.content}>
@@ -12,7 +39,7 @@ const Popout = () => {
           </View>
           <View style={s.details}>
             <Text style={s.name}>
-              CMMTC
+              {announcment?.Posted_By}
             </Text>
             <Text style={s.date}>
               2025/5/33
@@ -20,9 +47,9 @@ const Popout = () => {
           </View>
         </View>
         <View style={s.writing}>
-          <Text style={s.contentTitle}>Exam Notice</Text>
+          {/* <Text style={s.contentTitle}>Exam Notice</Text> */}
           <Text style={s.contentDescription}>
-            Hey students, as you know the final exam is coming. It's going to be on 2025/02/19 and every student should have their student ID and wear proper uniform. Study hard.
+            {announcment?.Description}
           </Text>
         </View>
       </View>
